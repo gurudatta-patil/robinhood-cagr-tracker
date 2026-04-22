@@ -28,6 +28,13 @@ pending_transfers.csv
 spy_cache.csv
 benchmarks.json
 curreport.csv
+price-cache.json
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Keep the example export in the repo
 !sample.csv
