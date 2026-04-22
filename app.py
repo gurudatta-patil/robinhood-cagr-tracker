@@ -5,6 +5,7 @@ import os
 import csv
 import io
 from datetime import datetime, date, timedelta
+from functools import lru_cache
 import json
 import math
 import yfinance as yf
@@ -26,7 +27,8 @@ def load_stocks_data():
     if os.path.exists(CSV_FILE):
         try:
             df = pd.read_csv(CSV_FILE)
-            return df.to_dict('records')
+            stocks = df.to_dict('records')
+            return normalize_transfer_prices(stocks)
         except:
             return []
     return []
@@ -35,6 +37,36 @@ def save_stocks_data(stocks):
     """Save stocks data to CSV file"""
     df = pd.DataFrame(stocks)
     df.to_csv(CSV_FILE, index=False)
+
+def normalize_transfer_prices(stocks):
+    """Repair older transfer imports that divided split-adjusted history twice."""
+    updated = False
+
+    for stock in stocks:
+        if stock.get('source') != 'transfer':
+            continue
+
+        try:
+            split_factor = get_cumulative_split_factor(stock['symbol'], stock['buy_date'])
+            if split_factor <= 1:
+                continue
+
+            stored_price = float(stock['buy_price'])
+            split_adjusted_price = round(get_stock_price_for_date(stock['symbol'], stock['buy_date']), 4)
+            if split_adjusted_price <= 0:
+                continue
+
+            # yfinance history is already split-adjusted; older imports divided it again.
+            if math.isclose(stored_price * split_factor, split_adjusted_price, rel_tol=0.05):
+                stock['buy_price'] = split_adjusted_price
+                updated = True
+        except Exception:
+            continue
+
+    if updated:
+        save_stocks_data(stocks)
+
+    return stocks
 
 def load_cash_data():
     """Load cash transactions from CSV file"""
@@ -652,9 +684,10 @@ def upload_csv():
                 acati_skipped += 1
                 continue
 
-            # Fetch closing price on transfer date (pre-split price, then divide by split factor)
+            # yfinance already returns split-adjusted history, so keep the adjusted
+            # quantity and use the fetched close directly.
             raw_price = get_stock_price_for_date(sym, transfer_date)
-            adjusted_price = round(raw_price / split_factor, 4) if split_factor > 1 else round(raw_price, 4)
+            adjusted_price = round(raw_price, 4)
 
             entry = {
                 'symbol': sym,
@@ -1171,6 +1204,7 @@ def get_spy_price_from_cache(spy_cache, date_str):
 
 # Removed old get_spy_price_for_date function - now using cache-only approach
 
+@lru_cache(maxsize=512)
 def get_stock_price_for_date(symbol, date_str):
     """Get stock price for a specific date"""
     try:
