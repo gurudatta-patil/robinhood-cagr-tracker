@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
+.tox/
+.coverage
+.coverage.*
+coverage.xml
+nosetests.xml
+*.cover
+*.log
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Local app data and caches
+stocks_data.csv
+cash_transactions.csv
+splits.csv
+pending_transfers.csv
+spy_cache.csv
+benchmarks.json
+curreport.csv
+
+# Keep the example export in the repo
+!sample.csv
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db

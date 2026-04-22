@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Portfolio Tracker</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg: #f7fafc;
+            --fg: #2d3748;
+            --card-bg: #ffffff;
+            --primary: #5a67d8;
+            --secondary: #a0aec0;
+            --positive: #38a169;
+            --negative: #e53e3e;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2d3748;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .header p {
+            font-size: 1rem;
+            color: #718096;
+            font-weight: 400;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .add-stock-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #434190;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--negative);
+            color: #fff;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .stocks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+
+        .stocks-table th,
+        .stocks-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stocks-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stocks-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .positive {
+            color: var(--positive);
+            font-weight: 600;
+        }
+
+        .negative {
+            color: var(--negative);
+            font-weight: 600;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-card p {
+            color: #718096;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .no-stocks {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .no-stocks i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ccc;
+        }
+
+        @media (max-width: 768px) {
+            .add-stock-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .stocks-table {
+                font-size: 0.9rem;
+            }
+            
+            .stocks-table th,
+            .stocks-table td {
+                padding: 10px 8px;
+            }
+        }
+
+        .loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .cagr-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+
+        .upload-zone i {
+            font-size: 2.5rem;
+            color: #a0aec0;
+            margin-bottom: 12px;
+        }
+
+        .upload-zone p {
+            color: #718096;
+            margin-bottom: 8px;
+        }
+
+        .upload-status {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .upload-status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .upload-status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .upload-status.loading {
+            background: #d1ecf1;
+            color: #0c5460;
+            display: block;
+        }
+
+        .cagr-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .cagr-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .cagr-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .cagr-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .purchase-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .purchase-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f1f1;
+            padding-bottom: 15px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .details-table th,
+        .details-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .details-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .charts-section {
+            margin-bottom: 30px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #f1f1f1;
+        }
+
+        .chart-tab {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+
+        .chart-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .chart-tab:hover {
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Stock Portfolio Tracker</h1>
+            <p>Track your investments and calculate CAGR with real-time prices</p>
+        </div>
+
+        <!-- Add Stock Form -->
+        <div class="card">
+            <h2 style="margin-bottom: 4px; color: #333;"><i class="fas fa-plus-circle"></i> Add New Stock</h2>
+            <p style="color: #718096; font-size: 0.85rem; margin-bottom: 16px;">
+                Enter the original quantity and price as of the buy date — splits that happened after will be auto-applied.
+            </p>
+            <form method="POST" action="/add_stock" class="add-stock-form">
+                <div class="form-group">
+                    <label for="symbol">Stock Symbol</label>
+                    <input type="text" id="symbol" name="symbol" placeholder="e.g., AAPL" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" placeholder="Shares (fractional allowed)" required min="0.001" step="0.001">
+                </div>
+                <div class="form-group">
+                    <label for="buy_price">Buy Price</label>
+                    <input type="number" id="buy_price" name="buy_price" placeholder="Price per share" required min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label for="buy_date">Buy Date</label>
+                    <input type="date" id="buy_date" name="buy_date" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Stock
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Import Robinhood CSV -->
+        <div class="card">
+            <h2 style="margin-bottom: 16px; color: #333;"><i class="fas fa-file-import"></i> Import Robinhood CSV</h2>
+            <p style="color: #718096; font-size: 0.9rem; margin-bottom: 16px;">
+                Upload your Robinhood activity CSV to auto-populate trades, cash deposits, dividends, and interest.
+                Duplicate transactions are automatically skipped.
+            </p>
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('csvFileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <p><strong>Click to upload</strong> or drag &amp; drop</p>
+                <p style="font-size: 0.8rem;">Robinhood activity CSV</p>
+                <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleFileSelect(this)">
+            </div>
+            <div id="uploadStatus" class="upload-status"></div>
+        </div>
+
+        <!-- Portfolio Summary -->
+        {% if stocks %}
+        {% set total_investment = stocks | sum(attribute='total_investment') %}
+        {% set total_current_value = stocks | sum(attribute='current_value') %}
+        {% set total_portfolio_value = total_current_value + [cash_balance, 0] | max %}
+        {% set total_profit_loss = total_portfolio_value - (total_deposited if has_cash_data and total_deposited > 0 else total_investment) %}
+
+        <div class="summary-cards">
+            <div class="summary-card">
+                <h3 style="color: #333;">${{ "%.2f" | format(total_deposited if has_cash_data and total_deposited > 0 else total_investment) }}</h3>
+                <p>{{ "Total Deposited" if has_cash_data else "Total Investment" }}</p>
+            </div>
+            <div class="summary-card">
+                <h3 style="color: #333;">${{ "%.2f" | format(total_current_value) }}</h3>
+                <p>Stocks Value</p>
+            </div>
+            {% if has_cash_data %}
+            <div class="summary-card">
+                <h3 style="color: #333;">${{ "%.2f" | format([cash_balance, 0] | max) }}</h3>
+                <p>Cash Balance</p>
+            </div>
+            <div class="summary-card">
+                <h3 style="color: #333;">${{ "%.2f" | format(total_portfolio_value) }}</h3>
+                <p>Total Portfolio</p>
+            </div>
+            {% endif %}
+            <div class="summary-card">
+                <h3 class="{% if total_profit_loss >= 0 %}positive{% else %}negative{% endif %}">
+                    ${{ "%.2f" | format(total_profit_loss) }}
+                </h3>
+                <p>Total P&L</p>
+            </div>
+            <div class="summary-card">
+                <h3 class="{% if portfolio_cagr >= 0 %}positive{% else %}negative{% endif %}">
+                    {{ "%.1f" | format(portfolio_cagr) }}%
+                </h3>
+                <p>Portfolio CAGR</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Charts Section -->
+        {% if stocks %}
+        <div class="charts-section">
+            <!-- Timeline Controls -->
+            <div class="chart-controls" style="margin-bottom: 20px; display: flex; justify-content: center;">
+                <div class="timeline-selector">
+                    <label for="timeline" style="margin-right: 10px; font-weight: 500; color: #4a5568;">Timeline:</label>
+                    <select id="timeline" onchange="updateChartTimeline()" style="padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; color: #2d3748;">
+                        <option value="1M">1 Month</option>
+                        <option value="3M">3 Months</option>
+                        <option value="6M">6 Months</option>
+                        <option value="1Y" selected>1 Year</option>
+                        <option value="ALL">All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <!-- Portfolio Allocation Chart -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Portfolio Allocation</h3>
+                    <div class="chart-container">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Performance Chart -->
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-bar"></i> Performance Overview</h3>
+                    <div class="chart-container">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio vs Benchmarks Networth Chart -->
+            <div class="chart-card">
+                <h3><i class="fas fa-chart-line"></i> Portfolio vs Benchmarks</h3>
+                <p style="color: #666; margin-bottom: 15px; font-size: 0.9rem;">
+                    {% if has_cash_data %}
+                    Your portfolio (stocks + uninvested cash) vs a zero-cash benchmark that immediately invests every bank transfer and incoming transferred-stock value into each benchmark on the day it arrives.
+                    {% else %}
+                    Compare your portfolio performance against a zero-cash benchmark that immediately invests the same amounts, including incoming transferred stocks, on the same dates.
+                    {% endif %}
+                </p>
+                <div class="chart-container">
+                    <canvas id="networthChart"></canvas>
+                </div>
+
+                <!-- Benchmark Management -->
+                <div id="benchmarkManager" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-weight: 500; color: #4a5568; font-size: 0.9rem;">Benchmarks:</span>
+                        <div id="benchmarkChips" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+                        <div style="display: flex; gap: 6px; align-items: center; margin-left: 8px;">
+                            <input id="benchmarkInput" type="text" placeholder="Add ticker (e.g. QQQ)"
+                                style="padding: 5px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; width: 140px; text-transform: uppercase;"
+                                onkeydown="if(event.key==='Enter') addBenchmark()">
+                            <button onclick="addBenchmark()" class="btn btn-primary" style="padding: 5px 12px; font-size: 0.85rem;">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+                        <span id="benchmarkStatus" style="font-size: 0.8rem; color: #718096;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Stocks Table -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #333;"><i class="fas fa-wallet"></i> Your Portfolio</h2>
+            
+            {% if stocks %}
+            <div style="overflow-x: auto;">
+                <table class="stocks-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>Total Quantity</th>
+                            <th>Avg. Buy Price</th>
+                            <th>Current Price</th>
+                            <th>Total Investment</th>
+                            <th>Current Value</th>
+                            <th>P&L</th>
+                            <th>P&L %</th>
+                            <th>CAGR</th>
+                            <th>Days Held</th>
+                            <th>Purchases</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stock in stocks %}
+                        <tr>
+                            <td><strong>{{ stock.symbol }}</strong></td>
+                            <td>{{ "%.3f" | format(stock.quantity) }}</td>
+                            <td>${{ "%.2f" | format(stock.buy_price) }}</td>
+                            <td>${{ "%.2f" | format(stock.current_price) }}</td>
+                            <td>${{ "%.2f" | format(stock.total_investment) }}</td>
+                            <td>${{ "%.2f" | format(stock.current_value) }}</td>
+                            <td class="{% if stock.profit_loss >= 0 %}positive{% else %}negative{% endif %}">
+                                ${{ "%.2f" | format(stock.profit_loss) }}
+                            </td>
+                            <td class="{% if stock.profit_loss_percent >= 0 %}positive{% else %}negative{% endif %}">
+                                {{ "%.1f" | format(stock.profit_loss_percent) }}%
+                            </td>
+                            <td>
+                                <span class="cagr-badge 
+                                    {% if stock.cagr >= 15 %}cagr-excellent
+                                    {% elif stock.cagr >= 10 %}cagr-good
+                                    {% elif stock.cagr >= 5 %}cagr-average
+                                    {% else %}cagr-poor{% endif %}">
+                                    {{ "%.1f" | format(stock.cagr) }}%
+                                </span>
+                            </td>
+                            <td>{{ stock.days_held }}</td>
+                            <td>
+                                <span class="purchase-count" title="{{ stock.date_range if stock.purchase_count > 1 else stock.buy_date }}">
+                                    {{ stock.purchase_count }} purchase{{ 's' if stock.purchase_count > 1 else '' }}
+                                    {% if stock.purchase_count > 1 %}
+                                    <i class="fas fa-info-circle" style="color: #667eea; cursor: pointer;" 
+                                       onclick="showPurchaseDetails('{{ stock.symbol }}')"></i>
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="/delete_all_symbol/{{ stock.symbol }}" 
+                                   class="btn btn-danger"
+                                   onclick="return confirm('Are you sure you want to delete ALL {{ stock.symbol }} positions ({{ stock.purchase_count }} purchase{{ 's' if stock.purchase_count > 1 else '' }})?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="no-stocks">
+                <i class="fas fa-chart-line"></i>
+                <h3>No stocks in your portfolio yet</h3>
+                <p>Add your first stock using the form above to get started!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshPrices()" title="Refresh Prices">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <!-- Purchase Details Modal -->
+    <div id="purchaseDetailsModal" class="purchase-details-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Purchase Details</h3>
+                <button class="modal-close" onclick="closePurchaseDetails()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        document.getElementById('buy_date').valueAsDate = new Date();
+
+        // Chart instances
+        let allocationChart = null;
+        let performanceChart = null;
+        let networthChart = null;
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notification-text');
+            text.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function refreshPrices() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const icon = refreshBtn.querySelector('i');
+            
+            // Add loading state
+            icon.classList.add('fa-spin');
+            refreshBtn.disabled = true;
+            
+            fetch('/api/refresh_prices')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Prices refreshed successfully!');
+                        setTimeout(() => {
+                            location.reload();
+                        }, 1000);
+                    } else {
+                        showNotification('Error refreshing prices: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    showNotification('Error refreshing prices');
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    icon.classList.remove('fa-spin');
+                    refreshBtn.disabled = false;
+                });
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if stocks %}
+            initializeCharts();
+            {% endif %}
+        });
+
+        function initializeCharts() {
+            loadAllocationChart();
+            loadPerformanceChart();
+            loadNetworthChart();
+        }
+
+        function loadAllocationChart() {
+            fetch('/api/portfolio_data')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('allocationChart').getContext('2d');
+                    
+                    if (allocationChart) {
+                        allocationChart.destroy();
+                    }
+                    
+                    const colors = [
+                        '#3b82f6', '#ef4444', '#10b981', '#f59e0b', 
+                        '#8b5cf6', '#f97316', '#06b6d4', '#84cc16',
+                        '#ec4899', '#6366f1'
+                    ];
+                    
+                    allocationChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.allocation.map(item => item.symbol),
+                            datasets: [{
+                                data: data.allocation.map(item => item.value),
+                                backgroundColor: colors.slice(0, data.allocation.length),
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 20,
+                                        usePointStyle: true
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const item = data.allocation[context.dataIndex];
+                                            return `${item.symbol}: $${item.value.toFixed(2)} (${item.percentage.toFixed(1)}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading allocation chart:', error);
+                });
+        }
+
+        function loadPerformanceChart() {
+            fetch('/api/performance_data')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('performanceChart').getContext('2d');
+                    
+                    if (performanceChart) {
+                        performanceChart.destroy();
+                    }
+                    
+                    performanceChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.symbol),
+                            datasets: [
+                                {
+                                    label: 'Investment',
+                                    data: data.map(item => item.investment),
+                                    backgroundColor: '#3b82f6',
+                                    borderColor: '#3b82f6',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Current Value',
+                                    data: data.map(item => item.current_value),
+                                    backgroundColor: '#10b981',
+                                    borderColor: '#10b981',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const value = context.parsed.y;
+                                            return `${context.dataset.label}: $${value.toFixed(2)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toFixed(0);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                });
+                })
+                .catch(error => {
+                    console.error('Error loading performance chart:', error);
+                });
+        }
+
+        // Benchmark colors: SPY=red, others rotate through
+        const BENCHMARK_COLORS = ['#ef4444', '#f59e0b', '#10b981', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'];
+
+        function loadNetworthChart() {
+            const timeline = document.getElementById('timeline')?.value || '1Y';
+            fetch(`/api/networth_data/${timeline}`)
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('networthChart').getContext('2d');
+
+                    if (networthChart) {
+                        networthChart.destroy();
+                    }
+
+                    const totalInvestment = data.total_investments[data.total_investments.length - 1] || 0;
+                    const finalPortfolioValue = data.portfolio_values[data.portfolio_values.length - 1] || 0;
+                    const portfolioReturn = totalInvestment > 0 ? ((finalPortfolioValue - totalInvestment) / totalInvestment * 100) : 0;
+
+                    const datasets = [
+                        {
+                            label: `Portfolio (${portfolioReturn >= 0 ? '+' : ''}${portfolioReturn.toFixed(1)}%)`,
+                            data: data.portfolio_values,
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ];
+
+                    // Add one dataset per benchmark
+                    const benchmarkTickers = Object.keys(data.benchmarks || {});
+                    benchmarkTickers.forEach((ticker, i) => {
+                        const values = data.benchmarks[ticker];
+                        const finalBmValue = values[values.length - 1] || 0;
+                        const bmReturn = totalInvestment > 0 ? ((finalBmValue - totalInvestment) / totalInvestment * 100) : 0;
+                        const color = BENCHMARK_COLORS[i % BENCHMARK_COLORS.length];
+                        datasets.push({
+                            label: `${ticker} (${bmReturn >= 0 ? '+' : ''}${bmReturn.toFixed(1)}%)`,
+                            data: values,
+                            borderColor: color,
+                            backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.1,
+                            borderDash: [5, 5]
+                        });
+                    });
+
+                    datasets.push({
+                        label: 'Total Investment',
+                        data: data.total_investments,
+                        borderColor: '#6b7280',
+                        backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.1,
+                        borderDash: [2, 2]
+                    });
+
+                    networthChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels: data.dates, datasets },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { usePointStyle: true, padding: 16 }
+                                },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: $${context.parsed.y.toFixed(2)}`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: false,
+                                    ticks: {
+                                        callback: function(value) { return '$' + value.toLocaleString(); }
+                                    }
+                                },
+                                x: {
+                                    type: 'time',
+                                    time: {
+                                        unit: timeline === '1M' ? 'day' : timeline === '3M' ? 'week' : 'month',
+                                        displayFormats: { day: 'MMM dd', week: 'MMM dd', month: 'MMM yy' }
+                                    }
+                                }
+                            },
+                            interaction: { mode: 'index', intersect: false }
+                        }
+                    });
+
+                    // Update benchmark chips
+                    renderBenchmarkChips(benchmarkTickers);
+                })
+                .catch(error => {
+                    console.error('Error loading networth chart:', error);
+                    showNotification('Error loading portfolio vs benchmark data');
+                });
+        }
+
+        function renderBenchmarkChips(tickers) {
+            const container = document.getElementById('benchmarkChips');
+            if (!container) return;
+            container.innerHTML = '';
+            tickers.forEach((ticker, i) => {
+                const color = BENCHMARK_COLORS[i % BENCHMARK_COLORS.length];
+                const chip = document.createElement('span');
+                chip.style.cssText = `display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;background:${color}22;color:${color};border:1px solid ${color}66;`;
+                chip.innerHTML = `${ticker}${ticker !== 'SPY' ? ` <button onclick="removeBenchmark('${ticker}')" style="background:none;border:none;cursor:pointer;color:${color};font-size:0.9rem;line-height:1;padding:0 2px;">&times;</button>` : ''}`;
+                container.appendChild(chip);
+            });
+        }
+
+        function addBenchmark() {
+            const input = document.getElementById('benchmarkInput');
+            const status = document.getElementById('benchmarkStatus');
+            const ticker = input.value.trim().toUpperCase();
+            if (!ticker) return;
+            status.textContent = 'Validating...';
+            fetch('/api/benchmarks/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    input.value = '';
+                    status.textContent = '';
+                    loadNetworthChart();
+                } else {
+                    status.textContent = data.message || 'Invalid ticker';
+                }
+            })
+            .catch(() => { status.textContent = 'Error adding ticker'; });
+        }
+
+        function removeBenchmark(ticker) {
+            fetch(`/api/benchmarks/remove/${ticker}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(() => loadNetworthChart())
+                .catch(() => showNotification('Error removing benchmark'));
+        }
+
+        function updateChartTimeline() {
+            loadNetworthChart();
+        }
+
+        function showPurchaseDetails(symbol) {
+            fetch(`/view_details/${symbol}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        showNotification('Error loading details: ' + data.message);
+                        return;
+                    }
+                    
+                    document.getElementById('modalTitle').textContent = `${data.symbol} - Purchase Details`;
+                    
+                    let tableHTML = `
+                        <table class="details-table">
+                            <thead>
+                                <tr>
+                                    <th>Purchase Date</th>
+                                    <th>Quantity</th>
+                                    <th>Buy Price</th>
+                                    <th>Investment</th>
+                                    <th>Current Price</th>
+                                    <th>Current Value</th>
+                                    <th>P&L</th>
+                                    <th>P&L %</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    let totalInvestment = 0;
+                    let totalCurrentValue = 0;
+                    
+                    data.details.forEach(detail => {
+                        totalInvestment += detail.total_investment;
+                        totalCurrentValue += detail.current_value;
+                        
+                        const profitLossClass = detail.profit_loss >= 0 ? 'positive' : 'negative';
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>${detail.buy_date}</td>
+                                <td>${detail.quantity.toFixed(3)}</td>
+                                <td>$${detail.buy_price.toFixed(2)}</td>
+                                <td>$${detail.total_investment.toFixed(2)}</td>
+                                <td>$${detail.current_price.toFixed(2)}</td>
+                                <td>$${detail.current_value.toFixed(2)}</td>
+                                <td class="${profitLossClass}">$${detail.profit_loss.toFixed(2)}</td>
+                                <td class="${profitLossClass}">${detail.profit_loss_percent.toFixed(1)}%</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    const totalProfitLoss = totalCurrentValue - totalInvestment;
+                    const totalProfitLossPercent = (totalProfitLoss / totalInvestment * 100);
+                    const totalProfitLossClass = totalProfitLoss >= 0 ? 'positive' : 'negative';
+                    
+                    tableHTML += `
+                            <tr style="font-weight: bold; border-top: 2px solid #333;">
+                                <td>TOTAL</td>
+                                <td>${data.details.reduce((sum, d) => sum + d.quantity, 0).toFixed(3)}</td>
+                                <td>$${(totalInvestment / data.details.reduce((sum, d) => sum + d.quantity, 0)).toFixed(2)}</td>
+                                <td>$${totalInvestment.toFixed(2)}</td>
+                                <td>$${data.details[0].current_price.toFixed(2)}</td>
+                                <td>$${totalCurrentValue.toFixed(2)}</td>
+                                <td class="${totalProfitLossClass}">$${totalProfitLoss.toFixed(2)}</td>
+                                <td class="${totalProfitLossClass}">${totalProfitLossPercent.toFixed(1)}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    `;
+                    
+                    document.getElementById('modalBody').innerHTML = tableHTML;
+                    document.getElementById('purchaseDetailsModal').style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('Error loading purchase details:', error);
+                    showNotification('Error loading purchase details');
+                });
+        }
+
+        function closePurchaseDetails() {
+            document.getElementById('purchaseDetailsModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('purchaseDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePurchaseDetails();
+            }
+        });
+
+        // CSV Upload
+        const uploadZone = document.getElementById('uploadZone');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) uploadFile(file);
+        });
+
+        function handleFileSelect(input) {
+            if (input.files[0]) uploadFile(input.files[0]);
+        }
+
+        function uploadFile(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                showUploadStatus('error', 'Please select a CSV file.');
+                return;
+            }
+            showUploadStatus('loading', '<i class="fas fa-spinner fa-spin"></i> Importing ' + file.name + '...');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload_csv', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        let parts = [];
+                        if (data.new_stocks > 0) parts.push(`${data.new_stocks} trade(s)`);
+                        if (data.acati_added > 0) parts.push(`${data.acati_added} transfer(s) auto-priced`);
+                        if (data.new_cash_transactions > 0) parts.push(`${data.new_cash_transactions} cash transaction(s)`);
+                        const skipped = (data.skipped_stocks || 0) + (data.acati_skipped || 0);
+                        if (skipped > 0) parts.push(`${skipped} duplicates skipped`);
+                        if (data.splits_applied && data.splits_applied.length > 0)
+                            parts.push(`splits: ${data.splits_applied.join(', ')}`);
+                        const msg = parts.length ? parts.join(' · ') : 'Nothing new to import';
+                        showUploadStatus('success', '<i class="fas fa-check-circle"></i> ' + msg + '. Reloading...');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showUploadStatus('error', '<i class="fas fa-exclamation-circle"></i> ' + data.message);
+                    }
+                })
+                .catch(() => showUploadStatus('error', 'Upload failed. Please try again.'));
+        }
+
+        function showUploadStatus(type, msg) {
+            uploadStatus.className = 'upload-status ' + type;
+            uploadStatus.innerHTML = msg;
+        }
+
+        // Auto-refresh prices every 5 minutes
+        setInterval(() => {
+            if (document.querySelectorAll('.stocks-table tbody tr').length > 0) {
+                refreshPrices();
+            }
+        }, 300000);
+    </script>
+</body>
+</html>

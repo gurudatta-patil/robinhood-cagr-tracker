@@ -1,0 +1,36 @@
+"Activity Date","Process Date","Settle Date","Instrument","Description","Trans Code","Quantity","Price","Amount"
+"10/18/2024","10/18/2024","10/18/2024","","Instant bank transfer - account ending in 9117","RTP","","","$12,500.00"
+"10/17/2024","10/17/2024","10/17/2024","","Instant bank transfer - account ending in 9117","RTP","","","$2,001.00"
+"10/17/2024","10/17/2024","10/17/2024","","Cash reward","MISC","","","$200.00"
+"10/1/2024","10/1/2024","10/2/2024","IVV","iShares Core S&P 500 ETF
+CUSIP: 464287200
+Dividend Reinvestment","Buy","0.035609","$570.92","($20.33)"
+"9/30/2024","9/30/2024","9/30/2024","IVV","Cash Div: R/D 2024-09-25 P/D 2024-09-30 - 9.096906 shares at 2.234609","CDIV","","","$20.33"
+"8/16/2024","8/16/2024","8/19/2024","AAPL","Apple
+CUSIP: 037833100
+Dividend Reinvestment","Buy","0.000044","$224.53","($0.01)"
+"8/15/2024","8/15/2024","8/15/2024","AAPL","Cash Div: R/D 2024-08-12 P/D 2024-08-15 - 0.033967 shares at 0.25","CDIV","","","$0.01"
+"6/18/2024","6/18/2024","6/20/2024","IVV","iShares Core S&P 500 ETF
+CUSIP: 464287200
+Dividend Reinvestment","Buy","0.026617","$548.89","($14.61)"
+"6/17/2024","6/17/2024","6/17/2024","IVV","Cash Div: R/D 2024-06-11 P/D 2024-06-17 - 9.070289 shares at 1.611133","CDIV","","","$14.61"
+"5/17/2024","5/17/2024","5/21/2024","AAPL","Apple
+CUSIP: 037833100
+Dividend Reinvestment","Buy","0.000052","$190.16","($0.01)"
+"5/16/2024","5/16/2024","5/16/2024","AAPL","Cash Div: R/D 2024-05-13 P/D 2024-05-16 - 0.033915 shares at 0.25","CDIV","","","$0.01"
+"4/5/2024","4/5/2024","4/5/2024","IVV","Stock Lending","SLIP","","","$0.01"
+"3/28/2024","3/28/2024","4/2/2024","IVV","iShares Core S&P 500 ETF
+CUSIP: 464287200
+Dividend Reinvestment","Buy","0.028631","$526.00","($15.06)"
+"3/27/2024","3/27/2024","3/27/2024","IVV","Cash Div: R/D 2024-03-22 P/D 2024-03-27 - 9.041658 shares at 1.665327","CDIV","","","$15.06"
+"2/16/2024","2/16/2024","2/21/2024","AAPL","Apple
+CUSIP: 037833100
+Dividend Reinvestment","Buy","0.000054","$182.56","($0.01)"
+"2/15/2024","2/15/2024","2/15/2024","AAPL","Cash Div: R/D 2024-02-12 P/D 2024-02-15 - 0.033861 shares at 0.24","CDIV","","","$0.01"
+"1/12/2024","1/12/2024","1/17/2024","IVV","iShares Core S&P 500 ETF
+CUSIP: 464287200","Buy","1","$480.28","($480.28)"
+"1/12/2024","1/12/2024","1/17/2024","IVV","iShares Core S&P 500 ETF
+CUSIP: 464287200","Buy","0.04107","$480.28","($19.72)"
+"1/12/2024","1/12/2024","1/12/2024","","Instant bank transfer - account ending in 9117","RTP","","","$500.00"
+""
+"","","","","","","","","","The data provided is for informational purposes only. Please consult a professional tax service or personal tax advisor if you need instructions on how to calculate cost basis or questions regarding your specific tax situation. Reminder: This data does not include Robinhood Crypto or Robinhood Spending activity."
