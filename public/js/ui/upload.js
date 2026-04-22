@@ -74,7 +74,7 @@ async function handleFile(file, statusEl, onComplete) {
     }
 
     // 3. Apply split events across all pre-split stock lots, including ACAT transfers.
-    // Python derives the ratio from every pre-split position, not only buy lots.
+    // The split ratio has to be derived from every pre-split position, not only buy lots.
     const adjustedStocks = applySplitsToLots([
       ...buys.map(b => ({ ...b })),
       ...acatStocks,

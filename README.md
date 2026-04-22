@@ -1,8 +1,8 @@
 # Robinhood Portfolio Tracker
 
-A Flask app for tracking a Robinhood portfolio using your activity report export. It imports buys, cash transfers, dividends, interest, stock splits, and ACAT transfers, then compares your live portfolio against benchmark strategies such as SPY.
+A Node.js app for tracking a Robinhood portfolio using your activity report export. It imports buys, cash transfers, dividends, interest, stock splits, and ACAT transfers, then compares your live portfolio against benchmark strategies such as SPY.
 
-This project is designed for personal portfolio analysis while still being easy to open source. Local portfolio data is stored in CSV files, and the recommended `.gitignore` excludes those files by default.
+The UI runs entirely in the browser and stores imported transactions locally in IndexedDB. The Node server is only used for market price lookups and caching.
 
 ## Features
 
@@ -12,7 +12,7 @@ This project is designed for personal portfolio analysis while still being easy 
 - Show portfolio value, deposited capital, and current cash balance
 - Compare portfolio performance against SPY and other benchmarks
 - Treat benchmark strategies as fully invested on each deposit or transfer date
-- Store local state in simple CSV files
+- Store imported transactions locally in the browser
 
 ## Robinhood Export
 
@@ -31,16 +31,9 @@ Why this matters:
 
 ## How Imports Work
 
-When you upload a new Robinhood activity report, the app clears previous generated portfolio state and rebuilds from the new file.
+When you upload a new Robinhood activity report, the app clears the previously imported browser-side transaction data and rebuilds the portfolio from the new file.
 
-That fresh import resets local state for:
-
-- `stocks_data.csv`
-- `cash_transactions.csv`
-- `splits.csv`
-- `pending_transfers.csv`
-
-This avoids duplicate imports and keeps the dashboard aligned with the latest full report.
+That avoids duplicate imports and keeps the dashboard aligned with the latest full report.
 
 ## Benchmark Logic
 
@@ -61,29 +54,22 @@ git clone <your-repo-url>
 cd Stocks
 ```
 
-### 2. Create a virtual environment
+### 2. Install dependencies
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+npm install
 ```
 
-### 3. Install dependencies
+### 3. Run the app
 
 ```bash
-pip install -r requirements.txt
-```
-
-### 4. Run the app
-
-```bash
-python app.py
+npm start
 ```
 
 Then open:
 
 ```text
-http://127.0.0.1:5000
+http://127.0.0.1:3000
 ```
 
 ## Usage
@@ -95,12 +81,12 @@ http://127.0.0.1:5000
 
 ## Project Files
 
-- [app.py](/Users/gurudattapatil/Documents/GitHub/Stocks/app.py): Flask server and import logic
-- [templates/index.html](/Users/gurudattapatil/Documents/GitHub/Stocks/templates/index.html): Main UI
-- [requirements.txt](/Users/gurudattapatil/Documents/GitHub/Stocks/requirements.txt): Python dependencies
+- [server.js](/Users/gurudattapatil/Documents/GitHub/Stocks/server.js): Node server for current and historical price lookups
+- [public/index.html](/Users/gurudattapatil/Documents/GitHub/Stocks/public/index.html): Main UI shell
+- [package.json](/Users/gurudattapatil/Documents/GitHub/Stocks/package.json): Node scripts and dependencies
 - [sample.csv](/Users/gurudattapatil/Documents/GitHub/Stocks/sample.csv): Example CSV kept in the repo
 
-Generated local files such as portfolio CSVs, caches, and virtual environments should stay untracked.
+Generated local files such as caches, browser storage exports, and `node_modules` should stay untracked.
 
 ## Open Source / Privacy Notes
 
@@ -109,17 +95,17 @@ If you publish this repository, do not commit your personal Robinhood exports or
 The included `.gitignore` excludes common sensitive and generated files, including:
 
 - Robinhood report exports
-- Local portfolio CSV state
+- Local browser-stored portfolio state and caches
 - Benchmark preferences
 - Cache files
-- Virtual environments
+- Node dependencies
 
 Before pushing to a public repo, verify that no personal CSV or account-derived files are staged.
 
 ## Notes
 
 - This project is not affiliated with Robinhood.
-- Market data is fetched from public finance libraries and services used by the app.
+- Market data is fetched from Yahoo Finance through the Node server.
 - If numbers look wrong after an import, re-export a full history report from account start to current date and upload it again.
 
 ## License

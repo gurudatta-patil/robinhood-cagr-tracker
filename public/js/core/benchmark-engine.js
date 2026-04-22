@@ -2,7 +2,6 @@
  * Benchmark Engine
  *
  * Computes the weekly portfolio net-worth series and parallel benchmark series.
- * Direct port of app.py:networth_data() — same algorithm, same edge-case handling.
  *
  * Inputs:
  *   rawStocks:        [{symbol, quantity, price, date, source}]
@@ -28,7 +27,7 @@ function today() {
 }
 
 /**
- * getPriceNear — port of app.py:get_spy_price_from_cache()
+ * getPriceNear
  *
  * Looks up the closest available price to dateStr in priceMap,
  * searching backward then forward up to 30 days.
@@ -60,7 +59,7 @@ export function getPriceNear(priceMap, dateStr) {
 
 /* ─────────────────────────────────────────────────────
    computeNetworthSeries
-   Port of app.py:networth_data()
+  Compute portfolio and benchmark time series
 ─────────────────────────────────────────────────────── */
 export function computeNetworthSeries({
   rawStocks,

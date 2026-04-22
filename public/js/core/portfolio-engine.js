@@ -2,7 +2,7 @@
  * Portfolio Engine
  *
  * Pure functions — no DOM, no fetch, no side effects.
- * Direct port of the computation logic from app.py.
+ * Shared computation logic for the browser-side app.
  *
  * Input: raw transaction arrays + price maps.
  * Output: consolidated holdings, summary stats, chart payloads.
@@ -19,7 +19,7 @@ export function yearsFrom(dateStr) {
   return daysBetween(dateStr) / 365.25;
 }
 
-/** CAGR — port of app.py:calculate_cagr() */
+/** CAGR helper */
 export function calcCAGR(initial, final, years) {
   if (years <= 0 || initial <= 0 || final < 0) return 0;
   return parseFloat(((Math.pow(final / initial, 1 / years) - 1) * 100).toFixed(2));
@@ -113,7 +113,7 @@ export function normalizeSplitAdjustedLots(rawStocks, splitTransactions) {
 
 /* ─────────────────────────────────────────────────────
    consolidateHoldings
-   Port of app.py:consolidate_stocks_by_symbol()
+  Consolidate raw lots by symbol
 
    Takes raw stock transactions [{symbol,quantity,price,date,source}]
    and merges into per-symbol positions with weighted-avg cost.
@@ -187,7 +187,7 @@ export function enrichHoldings(consolidated, currentPrices) {
 
 /* ─────────────────────────────────────────────────────
    computeSummary
-   Port of the summary calculations in app.py:index()
+  Summary calculations for the dashboard
 ─────────────────────────────────────────────────────── */
 export function computeSummary(enriched, rawStocks, cashTransactions) {
   const totalCurrentValue  = enriched.reduce((s, p) => s + p.currentValue, 0);
@@ -222,7 +222,7 @@ export function computeSummary(enriched, rawStocks, cashTransactions) {
   };
 }
 
-/** Port of app.py:calculate_portfolio_cagr() — investment-weighted CAGR */
+/** Investment-weighted portfolio CAGR */
 function computePortfolioCAGR(rawStocks, enriched) {
   if (!rawStocks.length) return 0;
 
@@ -251,7 +251,7 @@ function computePortfolioCAGR(rawStocks, enriched) {
 
 /* ─────────────────────────────────────────────────────
    Allocation + performance payloads for charts
-   Ports of app.py:portfolio_data() and performance_data()
+  Allocation and performance payload builders
 ─────────────────────────────────────────────────────── */
 export function buildAllocationData(enriched, cashSafe) {
   let totalValue = enriched.reduce((s, p) => s + p.currentValue, 0) + cashSafe;
@@ -287,7 +287,7 @@ export function buildPerformanceData(enriched) {
 
 /* ─────────────────────────────────────────────────────
    Per-lot enrichment (for the details modal)
-   Port of app.py:view_details()
+  Detailed lot enrichment for the holdings modal
 ─────────────────────────────────────────────────────── */
 export function enrichLots(lots, currentPrice) {
   return lots.map(lot => {

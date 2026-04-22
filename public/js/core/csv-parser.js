@@ -1,9 +1,9 @@
 /**
  * Robinhood CSV parser — browser-side
- * Direct port of app.py:parse_robinhood_csv() and helpers.
+ * Ported from the legacy server implementation.
  *
  * Uses Papa Parse (loaded as a global from CDN) for robust CSV tokenisation.
- * Returns normalised transaction arrays identical to what the Python backend produced.
+ * Returns normalised transaction arrays used by the browser-side app.
  */
 
 /* ── Amount parser (port of parse_amount) ── */
@@ -117,7 +117,7 @@ export function parseRobinhoodCSV(csvText) {
  * applySplitsToLots(buys, splits)
  *
  * Mutates quantities/prices in `buys` based on SPL events.
- * Direct port of the split-application block in app.py:upload_csv().
+ * Mirrors the legacy split-application logic.
  */
 export function applySplitsToLots(buys, splits) {
   const result = buys.map(b => ({ ...b })); // shallow copy
