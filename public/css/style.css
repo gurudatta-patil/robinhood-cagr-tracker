@@ -447,6 +447,10 @@ body::after {
   animation: fadeSlideUp 0.55s 0.15s ease both;
 }
 
+.charts-stack {
+  grid-template-columns: 1fr;
+}
+
 .chart-card {
   background: var(--bg-card); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 22px 26px;
