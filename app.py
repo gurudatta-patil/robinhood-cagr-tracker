@@ -129,6 +129,20 @@ def stock_uses_cash(stock):
     """Return whether a position should reduce cash when computing balances."""
     return stock.get('source', 'buy') != 'transfer'
 
+def calculate_total_deposited(raw_stocks, cash_transactions):
+    """Cash deposits plus incoming transfer value at the imported-day price."""
+    cash_deposits = sum(
+        float(tx['amount'])
+        for tx in cash_transactions
+        if tx['trans_code'] in ('RTP', 'ACH', 'JNLE')
+    )
+    transfer_value = sum(
+        float(stock['quantity']) * float(stock['buy_price'])
+        for stock in raw_stocks
+        if not stock_uses_cash(stock)
+    )
+    return cash_deposits + transfer_value
+
 def load_benchmarks():
     """Load benchmark tickers list. SPY is always first."""
     if os.path.exists(BENCHMARKS_FILE):
@@ -572,7 +586,7 @@ def index():
         if stock_uses_cash(s)
     )
     cash_balance = cash_in - stock_costs
-    total_deposited = sum(float(tx['amount']) for tx in cash_transactions if tx['trans_code'] in ('RTP', 'ACH', 'JNLE'))
+    total_deposited = calculate_total_deposited(raw_stocks, cash_transactions)
 
     return render_template('index.html', stocks=consolidated_stocks, unique_symbols=unique_symbols,
                            raw_stocks=raw_stocks, portfolio_cagr=portfolio_cagr,
